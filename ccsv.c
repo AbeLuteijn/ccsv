@@ -97,7 +97,6 @@ csv_file* read_csv(const char path[]) {
 	int character_cursor = 0;
 	int token_cursor = 0;
 
-	// TODO: convert to booleans?
 	int foundString = 0; 
 	int foundAllColumns = 0;
 
