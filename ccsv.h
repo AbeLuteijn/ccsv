@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef CCSV_H
+#define CCSV_H
 
 #include <stddef.h>
 
@@ -30,7 +30,7 @@ void push(csv_file_data* source, csv_token* data);
 
 void destroy_csv(csv_file* source);
 
-csv_token* create_csv_token(char* buffer, int size);
+csv_token* create_csv_token(char* buffer, size_t size);
 
 csv_row* get_row(csv_file* source, int row);
 

@@ -41,7 +41,7 @@ void push(csv_file_data* source, csv_token* data) {
 		csv_token** newData = (csv_token**)realloc(source->data, source->capacity * sizeof(csv_token*));
 		if (!newData) {
 			fprintf(stderr, "Realloc failed for push\n");
-			exit(1);
+			return;
 		}
 		source->data = newData;
 	}
@@ -56,7 +56,7 @@ void destroy_csv(csv_file* source) {
 	free(source);
 }
 
-csv_token* create_csv_token(char* buffer, int size) {
+csv_token* create_csv_token(char* buffer, size_t size) {
 	csv_token* newToken = (csv_token*)malloc(sizeof(csv_token));
 	if (!newToken) return NULL;
 	newToken->length = size;
@@ -69,14 +69,18 @@ csv_token* create_csv_token(char* buffer, int size) {
 	return newToken;
 }
 
+// This might be risky, the user needs to free this memory when calling this function. Maybe change it so that the user can pass their own pointer
 csv_row* get_row(csv_file* source, int row) {
+	if (row > source->rows) return NULL;
 	csv_row* new_row = (csv_row*)malloc(sizeof(csv_row));
+	if (!new_row) return NULL;
 	new_row->row_entries = &source->data->data[row * source->columns];
 	new_row->entries = source->columns;
 	return new_row; 
 }
 
 csv_token* get_token(csv_file* source, int row, int column) {
+	if ((row > source->rows) || (column > source->columns)) return NULL;
 	return source->data->data[row * source->columns + column];
 }
 
