@@ -7,20 +7,34 @@ typedef struct {
 	size_t length;
 } csv_token;
 
-typedef struct {
-	size_t columns;
-	size_t rows;
-} csv_file;
-
 typedef struct { 
 	size_t size;
 	size_t capacity;
 	csv_token** data;
 } csv_file_data;
 
+typedef struct {
+	size_t columns;
+	size_t rows;
+	csv_file_data* data;
+} csv_file;
+
+
 #define DEFAULT_CAPACITY 256
 
-csv_file_data* init() { 
+csv_file* init_csv_file(size_t rows, size_t columns, csv_file_data* source) {
+	csv_file* newFile = (csv_file*)malloc(sizeof(csv_file));
+	if (!newFile) {
+		fprintf(stderr, "Malloc of CSV_FILE failed\n");
+		return NULL;
+	}
+	newFile->rows = rows;
+	newFile->columns = columns;
+	newFile->data = source;
+	return newFile;
+}
+
+csv_file_data* init_csv_data_buffer() { 
 	csv_file_data* buffer = (csv_file_data*)malloc(sizeof(csv_file_data));
 	if (!buffer) return NULL;
 	buffer->size = 0;
@@ -46,11 +60,12 @@ void push(csv_file_data* source, csv_token* data) {
 	source->data[source->size++] = data;
 }
 
-void free_csv(csv_file_data* source) {
-	for (size_t i = 0; i < source->size; i++) {
-    		free(source->data[i]->data);
-    		free(source->data[i]);
+void free_csv(csv_file* source) {
+	for (size_t i = 0; i < source->data->size; i++) {
+    		free(source->data->data[i]->data);
+    		free(source->data->data[i]);
 	}
+	free(source);
 }
 
 csv_token* create_csv_token(char* buffer, int size) {
@@ -93,7 +108,7 @@ int main(void) {
 	int foundString = 0; 
 	int foundAllColumns = 0;
 
-	csv_file_data* file_data = init();
+	csv_file_data* file_data = init_csv_data_buffer();
 	while((currentChar = fgetc(inputFile)) != EOF) {
 		// are we starting/ending a string?
 		if (currentChar == '\"') {
@@ -136,16 +151,7 @@ int main(void) {
 	}
 
 	fclose(inputFile);
-	// INFO HEADERS
-	printf("ROWS: %d | COLUMNS: %d\n", rows, columns);
-	for (int j = 0; j < columns; j++) {
-		csv_token* token = get(file_data, 0, j, columns);
-		for (int i = 0; i < token->length; i++) {
-			printf("%c", token->data[i]);
-		}
-		printf(",");
-	}
-	printf("\n");
-	free_csv(file_data);
+	csv_file* myFile = init_csv_file(rows, columns, file_data);
+	free_csv(myFile);
 	return 0;
 }
